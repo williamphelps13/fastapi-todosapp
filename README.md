@@ -11,7 +11,8 @@
    2. Can run pip3 list to see that there is now an active virtual environment with only the pip and the setuptools package installed
 4. `deactivate`
    1. Deactivates the venv (can run pip3 list to verify)
-5. `pip install
+5. `pip install fastapi`
+6. `pip install "uvicorn[standard]"`
 
 ## Project 1 - Request Method Logic (79)
 

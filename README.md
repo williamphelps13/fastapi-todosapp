@@ -1,6 +1,7 @@
 # FastAPI - The Complete Course (717 - 12hrs)
 
 ## Setup (14)
+
 1. `pip3 list`
    1. List python packages installed in the current environment
 2. `python3 -m venv DIRECTORYenv`
@@ -21,6 +22,7 @@
       4. httptools: A framework for building HTTP servers.
       5. uvloop: An alternative event loop for asyncio. It's designed to be a drop-in replacement for the standard asyncio loop.
 7. `touch books.py`
+
    ```
    from fastapi import FastAPI
 
@@ -33,46 +35,41 @@
            {"name": "Lord of the Rings", "author": "J. R. R. Tolkien"},
        ]
    ```
+
    1. from fastapi import FastAPI: Imports the FastAPI class from the fastapi module.
    2. app = FastAPI(): Creates an instance of FastAPI. This instance (app) will be used to create routes/endpoints.
    3. @app.get("/books"): A decorator that tells FastAPI to execute the following function when an HTTP GET request is made to the URL path /books. This sets up a route.
    4. async def get_books(): Defines an asynchronous function get_books. The async keyword enables the function to perform asynchronous operations if needed.
    5. return [{}, {}]: The function returns a list of dictionaries
+
 8. `uvicorn books:app --reload`
    1. uvicorn: This is the CLI for Uvicorn
    2. books: books refers to the Python file name. This file should contain your FastAPI application instance.
    3. app: is the variable name of the FastAPI instance in the books.py file. This is the application that Uvicorn will run. This app handles HTTP requests, routes them to the appropriate handler functions, and returns HTTP responses.
    4. --reload: This flag enables auto-reloading of the server when there are code changes in the file
 9. Go to `http://127.0.0.1:8000/books`
+10. Go to `http://127.0.0.1:8000/docs` to see swagger UI
+    1.  Click 'Try it Out' > 'Execute'
+    2.  Observe Request URL, Response Body
 
 ## Project 1 - Request Method Logic (79)
 
-
 ## Project 2 - Move Fast (93)
-
 
 ## Setup Database (51)
 
-
 ## API Request Methods (34)
 
+---
 
 ## Authentication & Authorization (94)
 
-
 ## Authenticate Requests (44)
-
 
 ## Large Production Database Setup (58)
 
-
 ## Project 3.5 - Alembic Data Migration (37)
-
 
 ## Project 4 - Full Stack Application (196)
 
-
 ## Deploying (17)
-
-
-

@@ -49,8 +49,31 @@
    4. --reload: This flag enables auto-reloading of the server when there are code changes in the file
 9. Go to `http://127.0.0.1:8000/books`
 10. Go to `http://127.0.0.1:8000/docs` to see swagger UI
-    1.  Click 'Try it Out' > 'Execute'
-    2.  Observe Request URL, Response Body
+    1. Click 'Try it Out' > 'Execute'
+    2. Observe Request URL, Response Body
+11. Ensure shorter and static path parameters are listed before longer and dynamic parameters because FastAPI look at functions in order from top to bottom
+
+    ```
+    @app.get("/book/{dynamic}")
+    ...
+
+    @app.get("/book/mybook")
+    ...
+    # the function for /mybook will never run because mybook would be caught first by /{dynamic}
+    ```
+
+12. `http://127.0.0.1:8000/books/The%Alchemist`
+    1. harry%20potter: results in 'the alchemist`
+13. URL: http://127.0.0.1:8000/books/the%20alchemist
+    ```
+    @app.get("/books/{book_title}")
+    async def read_book(book_title: str): #int, float, dict, bool
+        for book in BOOKS:
+            if book['title'].casefold() == book_title.casefold():
+                return book
+        return {"message": "Book not found!"}
+    ```
+    Response: {"title": "The Alchemist"...}; See this in Swagger UI
 
 ## Project 1 - Request Method Logic (79)
 

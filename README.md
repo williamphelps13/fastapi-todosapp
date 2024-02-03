@@ -21,7 +21,12 @@
       3. websockets: A library for building WebSocket servers and clients.
       4. httptools: A framework for building HTTP servers.
       5. uvloop: An alternative event loop for asyncio. It's designed to be a drop-in replacement for the standard asyncio loop.
-7. `touch books.py`
+
+## Project 1 - Request Method Logic (79)
+
+### Create FastAPI App and Endpoint
+
+1. `touch books.py`
 
    ```
    from fastapi import FastAPI
@@ -42,44 +47,178 @@
    4. async def get_books(): Defines an asynchronous function get_books. The async keyword enables the function to perform asynchronous operations if needed.
    5. return [{}, {}]: The function returns a list of dictionaries
 
-8. `uvicorn books:app --reload`
+2. `uvicorn books:app --reload`
    1. uvicorn: This is the CLI for Uvicorn
    2. books: books refers to the Python file name. This file should contain your FastAPI application instance.
    3. app: is the variable name of the FastAPI instance in the books.py file. This is the application that Uvicorn will run. This app handles HTTP requests, routes them to the appropriate handler functions, and returns HTTP responses.
    4. --reload: This flag enables auto-reloading of the server when there are code changes in the file
-9. Go to `http://127.0.0.1:8000/books`
-10. Go to `http://127.0.0.1:8000/docs` to see swagger UI
-    1. Click 'Try it Out' > 'Execute'
-    2. Observe Request URL, Response Body
-11. Ensure shorter and static path parameters are listed before longer and dynamic parameters because FastAPI look at functions in order from top to bottom
+3. Go to `http://127.0.0.1:8000/books`
+4. Go to `http://127.0.0.1:8000/docs` to see swagger UI
+   1. Click 'Try it Out' > 'Execute'
+   2. Observe Request URL, Response Body
 
-    ```
-    @app.get("/book/{dynamic}")
-    ...
+### Path Parameters
 
-    @app.get("/book/mybook")
-    ...
-    # the function for /mybook will never run because mybook would be caught first by /{dynamic}
-    ```
+1. Ensure shorter and static path parameters are listed before longer and dynamic parameters because FastAPI look at functions in order from top to bottom
 
-12. `http://127.0.0.1:8000/books/The%Alchemist`
-    1. harry%20potter: results in 'the alchemist`
-13. URL: http://127.0.0.1:8000/books/the%20alchemist
-    ```
-    @app.get("/books/{book_title}")
-    async def read_book(book_title: str): #int, float, dict, bool
-        for book in BOOKS:
-            if book['title'].casefold() == book_title.casefold():
-                return book
-        return {"message": "Book not found!"}
-    ```
-    Response: {"title": "The Alchemist"...}; See this in Swagger UI
+   ```
+   @app.get("/book/{dynamic}")
+   ...
 
-## Project 1 - Request Method Logic (79)
+   @app.get("/book/mybook")
+   ...
+   # the function for /mybook will never run because mybook would be caught first by /{dynamic}
+   ```
+
+2. `http://127.0.0.1:8000/books/The%Alchemist`
+   1. harry%20potter: results in 'the alchemist`
+3. URL: http://127.0.0.1:8000/books/the%20alchemist
+   ```
+   @app.get("/books/{book_title}")
+   async def read_book(book_title: str): #int, float, dict, bool
+       for book in BOOKS:
+           if book['title'].casefold() == book_title.casefold():
+               return book
+       return {"message": "Book not found!"}
+   ```
+   Response: {"title": "The Alchemist"...}; See this in Swagger UI
+
+### Query Parameters
+
+1. Query paramters are:
+
+   1. Request paramters after "?"
+   2. Have name=value pairs
+   3. 127.0.0.1:8000/books/?category=fantasy
+   4. FastAPI has this syntax @app.get("/books/") to know that if the argument of the function matches a name in the query parameter
+
+   ```
+   @app.get("/books/")
+   async def read_books_by_query(title: str, author: str, category: str):
+      filtered_books = [
+        book for book in BOOKS
+        if book.get('title', '').casefold() == title.casefold()
+        and book.get('author', '').casefold() == author.casefold()
+        and book.get('category', '').casefold() == category.casefold()
+      ]
+
+      return filtered_books if filtered_books else {'message': "No books found for this query"}
+   ```
 
 ## Project 2 - Move Fast (93)
 
+```
+from fastapi import FastAPI, Path, Query, HTTPException
+from typing import Optional
+from pydantic import BaseModel, Field
+from starlette import status
+
+app = FastAPI()
+
+class Book: #class to have instances of Book as data instead of simply dictionaries
+  id: int
+  title: str
+  author: str
+  description: str
+  rating: int
+  published_date: int
+
+  def __init__(self, id, title, author, description, rating, published_date): #constructor
+    self.id = id
+    self.title = title
+    self.author = author
+    self.description = description
+    self.rating = rating
+    self.published_date = published_date
+
+class BookRequest(BaseModel): #class that uses pydantic to validate POST and PUT requests
+  id: Optional[int] = None #since there is logic that will generate an incremented id this is optional
+  title: str = Field(min_length=1, max_length=100) #pydantic will return error message if not between 1-100
+  author: str = Field(min_length=1, max_length=100)
+  description: str = Field(min_length=1, max_length=100)
+  rating: int = Field(ge=1, le=5)
+  published_date: int = Field(ge=1900, le=2022)
+
+  class Config: #pydantic integrates with swagger to provide an example POST/PUT object
+    json_schema_extra = {
+      "example": {
+        "title": "Test",
+        "author": "Test",
+        "description": "Test",
+        "rating": 1,
+        "published_date": 1900
+      }
+    }
+
+BOOKS = [ #Local data; will be in a database in next project
+  Book(1, "The Great Gatsby", "F. Scott Fitzgerald", "The story of the fabulously wealthy Jay Gatsby and his love for the beautiful Daisy Buchanan.", 4, 1925),
+  Book(2, "To Kill a Mockingbird", "Harper Lee", "The story of a young lawyer in Alabama", 5, 1960),
+  Book(3, "1984", "George Orwell", "A dystopian social science fiction novel", 4, 1949)
+]
+
+@app.get("/books")
+async def read_all_books():
+  return BOOKS
+
+@app.post("/create-book", status_code=status.HTTP_201_CREATED) #If successfully creates and returns a new instance of a Book then will also return a 201
+async def create_book(book_request: BookRequest): #the request will become an instance of the BookRequest class that extends pydantic BaseModel and therefore integrates validation
+  new_book = Book(**book_request.model_dump()) #dumps the properties into the arguments of the Book class to create a new instance of Book
+  new_book.id = 1 if len(BOOKS) == 0 else BOOKS[-1].id + 1 #logic that increments id
+  BOOKS.append(new_book)
+  return new_book #POST returns what was posted and a 201 status code
+
+@app.get("/books/{id}", status_code=status.HTTP_200_OK)
+async def read_book(id: int = Path(gt=0)): #FastAPI Path first validates the path parameter
+  for book in BOOKS:
+    if book.id == id:
+      return book
+  raise HTTPException(status_code=404, detail="Book not found") #returns 404 if no match to id is found
+
+@app.get("/books/", status_code=status.HTTP_200_OK)
+async def read_book_by_rating(book_rating: int = Query(ge=1, le=5)): #FastAPI Query first validates the query parameter
+  books_to_return = []
+  for book in BOOKS:
+    if book.rating == book_rating:
+      books_to_return.append(book)
+  if books_to_return:
+    return books_to_return
+  raise HTTPException(status_code=404, detail="Book not found")
+
+@app.put("/books/update_book", status_code=status.HTTP_204_NO_CONTENT)
+async def update_book(book: BookRequest):
+    for i, existing_book in enumerate(BOOKS):
+        if existing_book.id == book.id:
+            BOOKS[i] = book
+            return #PUT does not return what was updated but returns a 204 status code
+    raise HTTPException(status_code=404, detail='Book not found')
+
+@app.delete("/books/{book_id}", status_code=status.HTTP_200_OK)
+async def delete_book(book_id: int = Path(gt=0)):
+    for i, existing_book in enumerate(BOOKS):
+        if existing_book.id == book_id:
+            return BOOKS.pop(i) #DELETE does could return what was deleted and if it does also maybe returns a 200 status code
+    raise HTTPException(status_code=404, detail='Book not found')
+```
+
 ## Setup Database (51)
+1. Create database.py - Database Configuration and Session Creation File
+   1. Purpose: Establishes the connection to the database using SQLAlchemy. This includes setting up the database engine and session factory, which are crucial for interacting with the database in an object-oriented manner.
+   2. Key Components:
+      1. Database Engine: Responsible for connecting to the database. It's configured to connect to a SQLite database for this example.
+      2. Session Factory (SessionLocal): A configured sessionmaker that creates sessions for database operations, allowing for transactions and queries to be executed.
+      3. Declarative Base (Base): A base class for all model classes to inherit from. It ties the models to the engine and helps SQLAlchemy recognize them as part of the ORM.
+2. 
+3. Create models.py
+   1. Purpose: Defines the structure of the database tables in terms of Python classes. Each class corresponds to a database table, and instances of these classes represent rows in their respective tables.
+   2. Key Components:
+      1. User Model: Represents users in the application, including fields like id, email, username, etc. It uses SQLAlchemy column types to define the data type and constraints for each column.
+      2. Todo Model: Represents todo items associated with users. It includes fields for managing todo items, such as title, description, priority, and a foreign key to associate todos with users.
+4. Create main.py - FastAPI Application Initialization File
+   1. Purpose: Initializes the FastAPI application, imports the models, and creates the database tables if they don't exist yet. This file is the entry point for the web application, defining the FastAPI app instance and setting up the database.
+   2. Key Components:
+      1. FastAPI App Instance: The main object that FastAPI uses to create your web application. It handles incoming requests and routes them to the appropriate function.
+      2. Database Table Creation: Uses the SQLAlchemy models to create database tables according to the defined schemas if they are not already present in the database.
+4.
 
 ## API Request Methods (34)
 

@@ -1,7 +1,8 @@
 # First, we import 'Base' from our database setup to use as a foundation for our models.
 # We also import various column types to define the data each column will hold.
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+
 from database import Base
-from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 
 
 # Defining a Users table to store user information.

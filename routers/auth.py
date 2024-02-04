@@ -93,6 +93,7 @@ async def create_user(db: db_dependency, create_user_request: CreateUserRequest)
         hashed_password=bcrypt_context.hash(create_user_request.password),
         is_active=True,
     )
+
     db.add(create_user_model)
     db.commit()
 
@@ -109,4 +110,5 @@ async def login_for_access_token(
     token = create_access_token(
         user.username, user.id, user.role, timedelta(minutes=20)
     )
+
     return {"access_token": token, "token_type": "bearer"}

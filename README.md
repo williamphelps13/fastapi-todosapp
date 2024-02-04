@@ -229,11 +229,81 @@ async def delete_book(book_id: int = Path(gt=0)):
       1. Database Engine: Responsible for connecting to the database. It's configured to connect to a SQLite database for this example.
       2. Session Factory (SessionLocal): A configured sessionmaker that creates sessions for database operations, allowing for transactions and queries to be executed.
       3. Declarative Base (Base): A base class for all model classes to inherit from. It ties the models to the engine and helps SQLAlchemy recognize them as part of the ORM.
+```
+# This code sets up the database for a FastAPI app, using SQLAlchemy, a tool that lets us work with databases in a more Pythonic way.
+# Instead of writing SQL queries, we can use Python code to interact with our database, making it easier to create, read, update, and delete data.
+
+from sqlalchemy import (
+    create_engine,
+)  # This line imports a function to create a connection to our database.
+from sqlalchemy.orm import (
+    sessionmaker,
+)  # This imports a function to make sessions, which are used to manage our database operations safely.
+from sqlalchemy.ext.declarative import (
+    declarative_base,
+)  # This imports a function to create a base class for our database models.
+
+# This is the path to our database file. We're using SQLite here, which is a simple file-based database.
+SQLALCHEMY_DATABASE_URL = "sqlite:///./todosapp.db"
+
+# Here we're setting up the connection to our database using the URL we defined. The 'check_same_thread: False' part is specific to SQLite and makes it work with FastAPI's async features.
+engine = create_engine(
+    SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+)
+
+# This line sets up a "factory" for our sessions. Each session is a temporary connection to the database, letting us make changes or get data.
+# We're turning off some automatic features (autocommit and autoflush) to have more control over when data is actually saved or updated.
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+# This line creates a base class for our models. In SQLAlchemy, models are Python classes that represent tables in our database.
+# By inheriting from this base class, we can define the structure of our database in a clean, organized way.
+Base = declarative_base()
+```
 2. Create models.py
    1. Purpose: Defines the structure of the database tables in terms of Python classes. Each class corresponds to a database table, and instances of these classes represent rows in their respective tables.
    2. Key Components:
       1. User Model: Represents users in the application, including fields like id, email, username, etc. It uses SQLAlchemy column types to define the data type and constraints for each column.
       2. Todo Model: Represents todo items associated with users. It includes fields for managing todo items, such as title, description, priority, and a foreign key to associate todos with users.
+```
+# First, we import 'Base' from our database setup to use as a foundation for our models.
+# We also import various column types to define the data each column will hold.
+from sqlalchemy import Boolean, Column, ForeignKey, Integer, String
+
+from database import Base
+
+
+# Defining a Users table to store user information.
+class Users(Base):
+    __tablename__ = "users"  # The name of the table in the database.
+
+    # Here we define the columns in the table and their data types:
+    id = Column(
+        Integer, primary_key=True, index=True
+    )  # A unique ID for each user, used as the primary key, indexed for faster query performance
+    email = Column(String, unique=True)
+    username = Column(String, unique=True)
+    first_name = Column(String)
+    last_name = Column(String)
+    hashed_password = Column(String)
+    is_active = Column(Boolean, default=True)
+    role = Column(String)
+
+
+# Defining a Todos table for storing todo items related to users.
+class Todos(Base):
+    __tablename__ = "todos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String)
+    description = Column(String)
+    priority = Column(Integer)
+    complete = Column(
+        Boolean, default=False
+    )  # If not complete value is provided this will default to False (0)
+    owner_id = Column(
+        Integer, ForeignKey("users.id")
+    )  # Links each todo to a user in the Users table.
+```
 3. Create main.py - FastAPI Application Initialization File
    1. Purpose: Initializes the FastAPI application, imports the models, and creates the database tables if they don't exist yet. This file is the entry point for the web application, defining the FastAPI app instance and setting up the database.
    2. Key Components:

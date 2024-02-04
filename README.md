@@ -207,22 +207,30 @@ async def delete_book(book_id: int = Path(gt=0)):
       1. Database Engine: Responsible for connecting to the database. It's configured to connect to a SQLite database for this example.
       2. Session Factory (SessionLocal): A configured sessionmaker that creates sessions for database operations, allowing for transactions and queries to be executed.
       3. Declarative Base (Base): A base class for all model classes to inherit from. It ties the models to the engine and helps SQLAlchemy recognize them as part of the ORM.
-2. 
-3. Create models.py
+2. Create models.py
    1. Purpose: Defines the structure of the database tables in terms of Python classes. Each class corresponds to a database table, and instances of these classes represent rows in their respective tables.
    2. Key Components:
       1. User Model: Represents users in the application, including fields like id, email, username, etc. It uses SQLAlchemy column types to define the data type and constraints for each column.
       2. Todo Model: Represents todo items associated with users. It includes fields for managing todo items, such as title, description, priority, and a foreign key to associate todos with users.
-4. Create main.py - FastAPI Application Initialization File
+3. Create main.py - FastAPI Application Initialization File
    1. Purpose: Initializes the FastAPI application, imports the models, and creates the database tables if they don't exist yet. This file is the entry point for the web application, defining the FastAPI app instance and setting up the database.
    2. Key Components:
       1. FastAPI App Instance: The main object that FastAPI uses to create your web application. It handles incoming requests and routes them to the appropriate function.
       2. Database Table Creation: Uses the SQLAlchemy models to create database tables according to the defined schemas if they are not already present in the database.
-4.
+4. uvicorn main:app --reload
+   1. Starts up FastAPI app in development server which also creates todosapp.db
+5. sqlite3 todosapp.db
+6. Improve developer experience:
+   1. .mode box
+   2. .tables
+   3. .schema todos
+7. POST, GET, PUT, DELETE using SQL:
+   1. INSERT INTO todos(title, description, priority, complete, owner_id) VALUES ('Learn FastAPI', 'Working on db', 5, False, 1);
+   2. SELECT * FROM todos;
+   3. UPDATE todos SET complete = 1 WHERE id = 1;
+   4. DELETE FROM todos WHERE id = 1;
 
 ## API Request Methods (34)
-
----
 
 ## Authentication & Authorization (94)
 

@@ -1,7 +1,11 @@
-from fastapi import FastAPI  # Import the FastAPI class to create your web app.
-import models  # Import your SQLAlchemy models that define your database schema.
-from database import engine  # Import the SQLAlchemy engine for database connection.
+from fastapi import FastAPI
+import models
+from database import engine
+from routers import auth, todos
 
-app = FastAPI()  # Create an instance of the FastAPI class. This object provides all the web app functionalities.
+app = FastAPI()
 
-models.Base.metadata.create_all(bind=engine)  # Create the database tables based on your models if they don't already exist
+models.Base.metadata.create_all(bind=engine)
+
+app.include_router(auth.router)
+app.include_router(todos.router)

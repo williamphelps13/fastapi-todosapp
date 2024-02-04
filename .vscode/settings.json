@@ -1,8 +1,10 @@
 {
   "cSpell.words": [
     "casefold",
+    "charliermarsh",
     "fastapi",
     "pydantic",
+    "Pylance",
     "sessionmaker",
     "starlette"
   ]

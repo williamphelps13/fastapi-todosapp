@@ -1,5 +1,27 @@
 # FastAPI - The Complete Course (717 - 12hrs)
 
+## VSCode
+1. `pip install ruff`
+2. Install the following extensions:
+   1. Code formatting, linting, import sorting: `charliermarsh.ruff`
+   2. Pylance IntelliSense, linting, Python Debugger: `ms-python.python`
+   3. Python Indent: `KevinRose.vsc-python-indent`
+   4. Type Hints: `njqdev.vscode-python-typehint`
+   5. Dependency info: `ninoseki.vscode-pylens`
+3. Add the following to your `settings.json`:
+```
+  "[python]": {
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "charliermarsh.ruff",
+    "editor.codeActionsOnSave": {
+      "source.fixAll": "always",
+      "source.organizeImports": "always"
+    }
+  },
+```
+4. Run `pip freeze > requirements.txt` to create a list of installed packages
+5. Run `pip install -r requirements.txt` to install all the dependencies listed in the `requirements.txt`
+
 ## Setup (14)
 
 1. `pip3 list`
